@@ -21,10 +21,14 @@ var keyTokenSchema = new Schema(
       type: String,
       required: true,
     },
-    refreshToken: {
-      type: Array,
-      default: [],
+    refreshTokensUsed: {
+      type: [String],
+      default: [], // nhung RT da duoc su dung
     },
+    refreshToken: {
+      type: String,
+      required: true
+    }
   },
   {
     timestamps: true,

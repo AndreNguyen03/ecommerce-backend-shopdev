@@ -1,14 +1,6 @@
 'use strict'
+import {ReasonPhrases, StatusCodes} from '../utils/httpStatusCode.js'
 
-const StatusCode = {
-    FORBIDDEN: 403,
-    CONFLICT: 409
-}
-
-const ReasonStatusCode = {
-    FORBIDDEN: 'Bad request error',
-    CONFLICT: 'Conflict error'
-}
 
 class ErrorResponse extends Error {
 
@@ -21,16 +13,37 @@ class ErrorResponse extends Error {
 
 class ConflictRequestError extends ErrorResponse {
     
-    constructor(message = ReasonStatusCode.CONFLICT,statusCode = StatusCode.FORBIDDEN) {
+    constructor(message = ReasonPhrases.CONFLICT,statusCode = StatusCodes.FORBIDDEN) {
         super(message,statusCode)
     }
 }
 
 class BadRequestError extends ErrorResponse {
     
-    constructor(message = ReasonStatusCode.CONFLICT,statusCode = StatusCode.FORBIDDEN) {
+    constructor(message = ReasonPhrases.CONFLICT,statusCode = StatusCodes.FORBIDDEN) {
+        super(message,statusCode)
+    }
+}
+class AuthFailureError extends ErrorResponse {
+    
+    constructor(message = ReasonPhrases.UNAUTHORIZED,statusCode = StatusCodes.UNAUTHORIZED) {
         super(message,statusCode)
     }
 }
 
-export {ConflictRequestError, BadRequestError}
+
+class NotFoundEror extends ErrorResponse {
+    
+    constructor(message = ReasonPhrases.NOT_FOUND,statusCode = StatusCodes.NOT_FOUND) {
+        super(message,statusCode)
+    }
+}
+
+class ForbiddenError extends ErrorResponse {
+    
+    constructor(message = ReasonPhrases.FORBIDDEN,statusCode = StatusCodes.FORBIDDEN) {
+        super(message,statusCode)
+    }
+}
+
+export {ConflictRequestError, BadRequestError, AuthFailureError, NotFoundEror, ForbiddenError}
