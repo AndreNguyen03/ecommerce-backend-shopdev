@@ -6,7 +6,11 @@ import crypto from "crypto";
 import KeyTokenService from "../services/keyToken.service.js";
 import { createTokenPair, verifyJWT } from "../auth/authUtils.js";
 import { getInfoData } from "../utils/index.js";
-import { AuthFailureError, BadRequestError, ForbiddenError } from "../core/error.response.js";
+import {
+  AuthFailureError,
+  BadRequestError,
+  ForbiddenError,
+} from "../core/error.response.js";
 import { findByEmail } from "./shop.service.js";
 
 const RoleShop = {
@@ -60,7 +64,7 @@ class AccessService {
       const tokens = await createTokenPair(
         { userId: newShop._id, email },
         publicKey,
-        privateKey
+        privateKey,
       );
 
       return {
@@ -108,12 +112,12 @@ class AccessService {
     const privateKey = crypto.randomBytes(64).toString("hex");
     const publicKey = crypto.randomBytes(64).toString("hex");
 
-    const {_id: userId} = foundShop;
+    const { _id: userId } = foundShop;
     // 4. gen tokens
     const tokens = await createTokenPair(
       { userId, email },
       publicKey,
-      privateKey
+      privateKey,
     );
 
     await KeyTokenService.createKeyToken({
@@ -142,44 +146,83 @@ class AccessService {
   /* 
     check refreshtoken used
   */
-  static async handlerRefreshToken ( refreshToken) {
-
+  static async handlerRefreshToken(refreshToken) {
     // check token da dc su dung chua?
-    const foundToken = await KeyTokenService.findByRefreshTokenUsed(refreshToken);
+    const foundToken =
+      await KeyTokenService.findByRefreshTokenUsed(refreshToken);
 
     console.log(`found token in used ::`, foundToken);
 
     if (foundToken) {
       // decode xem la ai?
-      const {userId, email} = await verifyJWT(refreshToken, foundToken.privateKey);
-      console.log({userId, email});
+      const { userId, email } = await verifyJWT(
+        refreshToken,
+        foundToken.privateKey,
+      );
+      console.log({ userId, email });
 
       // xoa tat ca token trong key store
-      await KeyTokenService.deleteKeyById(userId);  
-      throw new ForbiddenError('Something wrong happened !! Please relogin');
+      await KeyTokenService.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happened !! Please relogin");
     }
 
     // neuu chua co , ok!
     const holderToken = await KeyTokenService.findByRefreshToken(refreshToken);
-    if(!holderToken) throw new AuthFailureError('shop not registered! 1');
+    if (!holderToken) throw new AuthFailureError("shop not registered! 1");
 
     // verifytoken
-    const {userId, email} = await verifyJWT(refreshToken, holderToken.privateKey);
-    console.log(`[2]----`, {userId,email})
+    const { userId, email } = await verifyJWT(
+      refreshToken,
+      holderToken.privateKey,
+    );
+    console.log(`[2]----`, { userId, email });
 
     // check UserId
-    const foundShop = await findByEmail({email})
-    if(!foundShop) throw new AuthFailureError('Shop not registered 2');
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registered 2");
 
     // create 1 cap moi
-    const tokens = await createTokenPair({userId,email}, holderToken.publicKey, holderToken.privateKey);
+    const tokens = await createTokenPair(
+      { userId, email },
+      holderToken.publicKey,
+      holderToken.privateKey,
+    );
 
     // update token
     await KeyTokenService.updateHolderToken(refreshToken, tokens);
-      return {
-        user: {userId, email},
-        tokens
-      }
+    return {
+      user: { userId, email },
+      tokens,
+    };
+  }
+
+  static async handlerRefreshTokenV2({ keyStore, user, refreshToken }) {
+    const { userId, email } = user;
+
+    if (keyStore.refreshTokensUsed.includes(refreshToken)) {
+      await KeyTokenService.deleteKeyById(userId);
+      throw new ForbiddenError("Something wrong happened !! please relogin");
+    }
+
+    if (keyStore.refreshToken !== refreshToken)
+      throw new AuthFailureError("Shop not registered");
+
+    const foundShop = await findByEmail({ email });
+    if (!foundShop) throw new AuthFailureError("Shop not registered 2");
+
+    // create 1 cap moi
+    const tokens = await createTokenPair(
+      { userId, email },
+      keyStore.publicKey,
+      keyStore.privateKey,
+    );
+
+    // update token
+    await KeyTokenService.updateHolderToken(refreshToken, tokens);
+    return {
+      user: { userId, email },
+      tokens,
+    };
   }
 }
 

@@ -1,9 +1,9 @@
-'use strict'
+"use strict";
 
-import lodash from 'lodash';
+import lodash from "lodash";
 
-const getInfoData = ({fields = [], object = {}}) => {
-    return lodash.pick(object,fields)
-}
+const getInfoData = ({ fields = [], object = {} }) => {
+  return lodash.pick(object, fields);
+};
 
-export {getInfoData}
+export { getInfoData };

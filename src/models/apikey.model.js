@@ -25,7 +25,7 @@ var apiKeySchema = new mongoose.Schema(
   {
     timestamp: true,
     collection: COLLECTION_NAME,
-  }
+  },
 );
 
 //Export the model

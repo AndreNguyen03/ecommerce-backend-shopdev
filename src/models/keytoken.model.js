@@ -27,8 +27,8 @@ var keyTokenSchema = new Schema(
     },
     refreshToken: {
       type: String,
-      required: true
-    }
+      required: true,
+    },
   },
   {
     timestamps: true,
