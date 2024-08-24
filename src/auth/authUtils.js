@@ -79,7 +79,7 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
   const keyStore = await KeyTokenService.findByUserId(userId);
   if (!keyStore) throw new NotFoundEror("Not found keyStore");
 
-  // 3.
+  // 3. kiem tra xem co refreshtoken 
   if (req.headers[HEADER.REFRESHTOKEN]) {
     try {
       const refreshToken = req.headers[HEADER.REFRESHTOKEN];
@@ -94,6 +94,21 @@ const authenticationV2 = asyncHandler(async (req, res, next) => {
       throw error;
     }
   }
+
+  // 4.
+  const accessToken = req.headers[HEADER.AUTHORIZATION];
+  if (!accessToken) throw new AuthFailureError("Invalid Request");
+    try {
+      const decodeUser = JWT.verify(accessToken, keyStore.publicKey);
+      if (userId !== decodeUser.userId)
+        throw new AuthFailureError("Invalid Userid");
+      req.keyStore = keyStore;
+      req.user = decodeUser;
+      return next();
+    } catch (error) {
+      throw error;
+    }
+    
 });
 
 const verifyJWT = async (token, keySecret) => {

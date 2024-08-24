@@ -59,7 +59,7 @@ class Furniture extends Product {
   }
 }
 
-class Clothing extends Product {
+class Clothing extends Producpt {
   async createProduct() {
     const newClothing = await clothing.create(this.product_attributes);
     if (!newClothing) throw new BadRequestError("Create new clothing error!");

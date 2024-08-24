@@ -27,7 +27,7 @@ export default [
 
     rules: {
       "no-undef": "error",
-      indent: ["error", 2],
+      indent: ["error", 4],
       "linebreak-style": ["error", "unix"],
       semi: ["error", "always"],
       "no-unused-vars": "error",
